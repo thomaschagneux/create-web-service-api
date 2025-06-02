@@ -10,7 +10,7 @@ reset-db:
 	php bin/console doctrine:database:create
 
 	@echo "Running migrations..."
-	php bin/console doctrine:migrations:migrate --no-interaction
+	#php bin/console doctrine:migrations:migrate --no-interaction
 
 	@echo "Updating schema..."
 	php bin/console doctrine:schema:update --force
