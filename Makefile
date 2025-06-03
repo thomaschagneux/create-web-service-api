@@ -17,3 +17,8 @@ reset-db:
 
 	@echo "Loading fixtures..."
 	php bin/console doctrine:fixtures:load --no-interaction
+
+clean:
+	php bin/console cache:clear
+	php bin/console cache:warm
+	./vendor/bin/php-cs-fixer fix
