@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\AppUserRepository;
 use Doctrine\ORM\Mapping as ORM;
+use JMS\Serializer\Annotation\Groups;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
@@ -17,12 +18,14 @@ class AppUser implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null; // @phpstan-ignore-line
 
     #[ORM\Column(length: 180)]
+    #[Groups(['getUserList', 'getUser'])]
     private string $email;
 
     /**
      * @var list<string> The user roles
      */
     #[ORM\Column]
+    #[Groups(['getUserList', 'getUser'])]
     private array $roles = [];
 
     /**
@@ -30,6 +33,17 @@ class AppUser implements UserInterface, PasswordAuthenticatedUserInterface
      */
     #[ORM\Column]
     private string $password;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['getUserList', 'getUser'])]
+    private ?string $firstName = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['getUserList', 'getUser'])]
+    private ?string $lastName = null;
+
+    #[ORM\ManyToOne(inversedBy: 'users')]
+    private Customer $customer;
 
     public function getId(): ?int
     {
@@ -110,5 +124,35 @@ class AppUser implements UserInterface, PasswordAuthenticatedUserInterface
     {
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;
+    }
+
+    public function getFirstName(): ?string
+    {
+        return $this->firstName;
+    }
+
+    public function setFirstName(?string $firstName): void
+    {
+        $this->firstName = $firstName;
+    }
+
+    public function getLastName(): ?string
+    {
+        return $this->lastName;
+    }
+
+    public function setLastName(?string $lastName): void
+    {
+        $this->lastName = $lastName;
+    }
+
+    public function getCustomer(): Customer
+    {
+        return $this->customer;
+    }
+
+    public function setCustomer(Customer $customer): void
+    {
+        $this->customer = $customer;
     }
 }
