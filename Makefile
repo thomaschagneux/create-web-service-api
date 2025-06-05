@@ -22,3 +22,4 @@ clean:
 	php bin/console cache:clear
 	php bin/console cache:warm
 	./vendor/bin/php-cs-fixer fix
+	./vendor/bin/phpstan analyse

@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\AppUser;
+use App\Entity\Customer;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
@@ -33,28 +34,17 @@ class AppUserRepository extends ServiceEntityRepository implements PasswordUpgra
         $this->getEntityManager()->flush();
     }
 
-    //    /**
-    //     * @return AppUser[] Returns an array of AppUser objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('a')
-    //            ->andWhere('a.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('a.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    /**
+     * @return AppUser[]
+     */
+    public function findPaginatedList(int $page, int $limit, Customer $customer): array
+    {
+        /** @var AppUser[] $result */
+        $result = $this
+            ->createQueryBuilder('u')
+            ->getQuery()
+            ->getResult();
 
-    //    public function findOneBySomeField($value): ?AppUser
-    //    {
-    //        return $this->createQueryBuilder('a')
-    //            ->andWhere('a.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        return $result;
+    }
 }
