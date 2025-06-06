@@ -42,6 +42,10 @@ class AppUserRepository extends ServiceEntityRepository implements PasswordUpgra
         /** @var AppUser[] $result */
         $result = $this
             ->createQueryBuilder('u')
+            ->andWhere('u.customer = :customer')
+            ->setParameter('customer', $customer)
+            ->setMaxResults($limit)
+            ->setFirstResult(($page - 1) * $limit)
             ->getQuery()
             ->getResult();
 
