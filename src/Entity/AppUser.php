@@ -43,6 +43,7 @@ class AppUser implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $lastName = null;
 
     #[ORM\ManyToOne(inversedBy: 'users')]
+    #[Groups(['getUserList', 'getUser'])]
     private Customer $customer;
 
     public function getId(): ?int
