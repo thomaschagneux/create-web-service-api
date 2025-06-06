@@ -15,7 +15,7 @@ final class ListUserController extends AbstractController
     /**
      * @throws InvalidArgumentException
      */
-    #[Route('/api/customer/{id}/user-list', name: 'list_user_by_customer')]
+    #[Route('/api/customer/{id}/user-list', name: 'list_user_by_customer', methods: ['GET'])]
     public function listUsers(Customer $customer, Request $request, UserService $userService): JsonResponse
     {
         $page = $request->query->get('page', '1');
@@ -25,7 +25,7 @@ final class ListUserController extends AbstractController
             return new JsonResponse(['message' => 'Page or limit is not numeric'], 400);
         }
 
-        $jsonUserList = $userService->getUser((int) $page, (int) $limit, $customer);
+        $jsonUserList = $userService->getUsers((int) $page, (int) $limit, $customer);
 
         return new JsonResponse($jsonUserList, 200, [], true);
     }

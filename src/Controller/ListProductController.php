@@ -14,7 +14,7 @@ final class ListProductController extends AbstractController
     /**
      * @throws InvalidArgumentException
      */
-    #[Route('api/product-list', name: 'list_product')]
+    #[Route('api/product-list', name: 'list_product', methods: ['GET'])]
     public function listProduct(Request $request, ProductService $productService): JsonResponse
     {
         $page = $request->query->get('page', '1');
