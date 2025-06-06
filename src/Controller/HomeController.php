@@ -9,7 +9,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 final class HomeController extends AbstractController
 {
-    #[Route('/api/home', name: 'home')]
+    #[Route('/api/home', name: 'home', methods: ['GET'])]
     #[IsGranted('ROLE_ADMIN')]
     public function index(): JsonResponse
     {
