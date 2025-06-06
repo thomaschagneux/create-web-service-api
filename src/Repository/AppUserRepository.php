@@ -39,7 +39,6 @@ class AppUserRepository extends ServiceEntityRepository implements PasswordUpgra
      */
     public function findPaginatedList(int $page, int $limit, Customer $customer): array
     {
-        // dd(gettype($page), $page, gettype($limit), $limit, gettype($customer), $customer);
         /** @var AppUser[] $result */
         $result = $this
             ->createQueryBuilder('u')
