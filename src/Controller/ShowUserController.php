@@ -13,7 +13,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class ShowUserController extends AbstractController
 {
-    #[Route('/api/customer/{customer_id}/user/{id}', name: 'app_show_user', methods: ['GET'])]
+    #[Route('/api/customer/{customer_id}/user/{id}', name: 'show_user', methods: ['GET'])]
     public function showUser(
         #[MapEntity(id: 'customer_id')] Customer $customer,
         #[MapEntity(id: 'id')] AppUser $user,
