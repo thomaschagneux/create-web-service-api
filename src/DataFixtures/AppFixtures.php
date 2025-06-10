@@ -54,8 +54,7 @@ class AppFixtures extends Fixture
     {
         $faker = Factory::create();
         for ($i = 0; $i < 20; ++$i) {
-            /** @var Customer $customer */
-            $customer = $faker->randomElement($customers);
+            $customerIndex = $i % count($customers);
             $user = new AppUser();
             $roles = [self::ROLE_USER, self::ROLE_ADMIN];
             $role = $i % 2;
@@ -64,7 +63,7 @@ class AppFixtures extends Fixture
             $user->setPassword($this->userPasswordHasher->hashPassword($user, 'pass123'));
             $user->setFirstName($faker->firstName);
             $user->setLastName($faker->lastName);
-            $user->setCustomer($customer);
+            $user->setCustomer($customers[$customerIndex]);
             $manager->persist($user);
         }
     }
