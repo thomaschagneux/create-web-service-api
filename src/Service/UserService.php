@@ -2,14 +2,18 @@
 
 namespace App\Service;
 
+use App\Dto\UserData;
 use App\Entity\AppUser;
 use App\Entity\Customer;
 use App\Repository\AppUserRepository;
+use App\Repository\CustomerRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerInterface;
 use Psr\Cache\InvalidArgumentException;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
@@ -19,6 +23,9 @@ class UserService
         private readonly AppUserRepository $appUserRepository,
         private readonly TagAwareCacheInterface $cache,
         private readonly SerializerInterface $serializer,
+        private readonly EntityManagerInterface $entityManager,
+        private readonly UserPasswordHasherInterface $userPasswordHasher,
+        private readonly CustomerRepository $customerRepository,
     ) {
     }
 
@@ -62,5 +69,26 @@ class UserService
         });
 
         return $this->serializer->serialize($userCached, 'json', $context);
+    }
+
+    public function createUser(UserData $userData): AppUser
+    {
+        $user = new AppUser();
+        $password = $this->userPasswordHasher->hashPassword($user, $userData->getPassword());
+
+        /** @var Customer $customer */
+        $customer = $this->customerRepository->find($userData->getCustomerId());
+
+        $user
+            ->setEmail($userData->getEmail())
+            ->setFirstName($userData->getFirstName())
+            ->setLastName($userData->getLastName())
+            ->setCustomer($customer)
+            ->setPassword($password);
+
+        $this->entityManager->persist($user);
+        $this->entityManager->flush();
+
+        return $user;
     }
 }
