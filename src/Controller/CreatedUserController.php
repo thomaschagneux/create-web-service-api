@@ -14,6 +14,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 final class CreatedUserController extends AbstractController
 {
@@ -40,6 +41,7 @@ final class CreatedUserController extends AbstractController
         )
     )]
     #[OA\Tag('Users')]
+    #[IsGranted('ROLE_ADMIN')]
     public function createCustomerUser(Customer $customer, Request $request, UserService $userService, SerializerInterface $serializer): JsonResponse
     {
         /** @var UserData $userData */

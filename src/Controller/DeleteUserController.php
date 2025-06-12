@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 final class DeleteUserController extends AbstractController
 {
@@ -41,6 +42,7 @@ final class DeleteUserController extends AbstractController
         schema: new OA\Schema(type: 'integer')
     )]
     #[OA\Tag('Users')]
+    #[IsGranted('ROLE_ADMIN')]
     public function deleteUser(
         #[MapEntity(id: 'customer_id')] Customer $customer,
         #[MapEntity(id: 'id')] AppUser $appUser,

@@ -34,16 +34,7 @@ class UserService
      */
     public function getUsers(int $page, int $limit, Customer $customer): string
     {
-        $idCache = 'user_list_page_'.$page.'_limit_'.$limit;
-
-        $userList = $this->cache->get($idCache, function (ItemInterface $item) use ($page, $limit, $customer) {
-            echo "L'élement n\'est pas dans le cache, il est mis en cache \n";
-            $customTime = 60 * 5;
-            $item->expiresAfter($customTime);
-            $item->tag(['user_list']);
-
-            return $this->appUserRepository->findPaginatedList($page, $limit, $customer);
-        });
+        $userList = $this->appUserRepository->findPaginatedList($page, $limit, $customer);
 
         $context = SerializationContext::create()->setGroups(['getUserList']);
 

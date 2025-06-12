@@ -12,6 +12,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 final class ShowUserController extends AbstractController
 {
@@ -36,6 +37,7 @@ final class ShowUserController extends AbstractController
         schema: new OA\Schema(type: 'integer')
     )]
     #[OA\Tag('Users')]
+    #[IsGranted('ROLE_ADMIN')]
     public function showUser(
         #[MapEntity(id: 'customer_id')] Customer $customer,
         #[MapEntity(id: 'id')] AppUser $user,

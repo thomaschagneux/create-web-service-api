@@ -10,6 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 final class ListUserController extends AbstractController
 {
@@ -42,6 +43,7 @@ final class ListUserController extends AbstractController
         schema: new OA\Schema(type: 'int')
     )]
     #[OA\Tag('Users')]
+    #[IsGranted('ROLE_ADMIN')]
     public function listUsers(Customer $customer, Request $request, UserService $userService): JsonResponse
     {
         $page = $request->query->get('page', '1');
