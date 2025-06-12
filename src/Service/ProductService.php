@@ -24,16 +24,7 @@ class ProductService
      */
     public function getProducts(int $page, int $limit): string
     {
-        $idCache = 'product_list_page_'.$page.'_limit_'.$limit;
-
-        $productList = $this->cache->get($idCache, function (ItemInterface $item) use ($page, $limit) {
-            echo "L'élément n'est pas dans le cache, il est mis en cache \n";
-            $customTime = 60 * 5;
-            $item->expiresAfter($customTime);
-            $item->tag(['product_list']);
-
-            return $this->productRepository->findPaginatedList($page, $limit);
-        });
+        $productList = $this->productRepository->findPaginatedList($page, $limit);
 
         $context = SerializationContext::create()->setGroups(['getProductList']);
 

@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\AppUser;
 use App\Entity\Customer;
 use Doctrine\ORM\EntityManagerInterface;
+use OpenApi\Attributes as OA;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -19,6 +20,27 @@ final class DeleteUserController extends AbstractController
     }
 
     #[Route('/api/customer/{customer_id}/user/{id}', name: 'delete_user', methods: ['DELETE'])]
+    #[OA\Response(
+        response: 204,
+        description: 'User deleted successfully'
+    )]
+    #[OA\Response(
+        response: 400,
+        description: 'Bad request - User and customer are not linked'
+    )]
+    #[OA\Parameter(
+        name: 'customer_id',
+        description: 'The customer ID',
+        in: 'path',
+        schema: new OA\Schema(type: 'integer')
+    )]
+    #[OA\Parameter(
+        name: 'id',
+        description: 'The user ID',
+        in: 'path',
+        schema: new OA\Schema(type: 'integer')
+    )]
+    #[OA\Tag('Users')]
     public function deleteUser(
         #[MapEntity(id: 'customer_id')] Customer $customer,
         #[MapEntity(id: 'id')] AppUser $appUser,
