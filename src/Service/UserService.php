@@ -21,7 +21,6 @@ class UserService
 {
     public function __construct(
         private readonly AppUserRepository $appUserRepository,
-        private readonly TagAwareCacheInterface $cache,
         private readonly SerializerInterface $serializer,
         private readonly EntityManagerInterface $entityManager,
         private readonly UserPasswordHasherInterface $userPasswordHasher,
@@ -49,17 +48,7 @@ class UserService
             throw new HttpException(Response::HTTP_BAD_REQUEST, "Cet utilisateur n'est pas lié à ce client");
         }
 
-        $idCache = 'user_'.$user->getId().'_customer_'.$customer->getId();
-        $userCached = $this->cache->get($idCache, function (ItemInterface $item) use ($user) {
-            echo "L'élément n'est pas dans le cache, il est mis en cache \n";
-            $customTime = 60 * 5;
-            $item->expiresAfter($customTime);
-            $item->tag(['user_show']);
-
-            return $user;
-        });
-
-        return $this->serializer->serialize($userCached, 'json', $context);
+        return $this->serializer->serialize($user, 'json', $context);
     }
 
     public function createUser(UserData $userData): AppUser

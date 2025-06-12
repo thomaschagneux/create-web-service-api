@@ -11,9 +11,16 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Contracts\Cache\ItemInterface;
+use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
 final class ListUserController extends AbstractController
 {
+    public function __construct(
+        private readonly TagAwareCacheInterface $cache,
+    ) {
+    }
+
     /**
      * Cette méthode permet de récupérer l'ensemble des utilisateurs liés à un client.
      *
@@ -53,8 +60,16 @@ final class ListUserController extends AbstractController
             return new JsonResponse(['message' => 'Page or limit is not numeric'], 400);
         }
 
-        $jsonUserList = $userService->getUsers((int) $page, (int) $limit, $customer);
+        $idCache = 'list_users_customer_'.$customer->getId().'_page_'.$page.'_limit_'.$limit;
+        $isCached = 'true';
 
-        return new JsonResponse($jsonUserList, 200, [], true);
+        $jsonUserList = $this->cache->get($idCache, function (ItemInterface $item) use ($customer, $limit, $page, $userService, $isCached) {
+            $isCached = 'false';
+            $item = $item->expiresAfter(60 * 5);
+
+            return $userService->getUsers((int) $page, (int) $limit, $customer);
+        });
+
+        return new JsonResponse($jsonUserList, 200, ['x-is-cached' => $isCached], true);
     }
 }

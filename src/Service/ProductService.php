@@ -15,7 +15,6 @@ class ProductService
     public function __construct(
         private readonly ProductRepository $productRepository,
         private readonly SerializerInterface $serializer,
-        private readonly TagAwareCacheInterface $cache,
     ) {
     }
 
@@ -33,19 +32,8 @@ class ProductService
 
     public function getProduct(Product $product): string
     {
-        $idCache = 'product_'.$product->getId();
-
-        $cachedProduct = $this->cache->get($idCache, function (ItemInterface $item) use ($product) {
-            echo "Le produit n'est pas dans le cache, il est mis en cache \n";
-            $customTime = 60 * 5;
-            $item->expiresAfter($customTime);
-            $item->tag(['product']);
-
-            return $product;
-        });
-
         $context = SerializationContext::create()->setGroups(['getProduct']);
 
-        return $this->serializer->serialize($cachedProduct, 'json', $context);
+        return $this->serializer->serialize($product, 'json', $context);
     }
 }
