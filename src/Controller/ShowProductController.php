@@ -9,6 +9,7 @@ use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 final class ShowProductController extends AbstractController
 {
@@ -27,6 +28,7 @@ final class ShowProductController extends AbstractController
         schema: new OA\Schema(type: 'integer')
     )]
     #[OA\Tag('Products')]
+    #[IsGranted('ROLE_ADMIN')]
     public function showProduct(Product $product, ProductService $productService): JsonResponse
     {
         $jsonProduct = $productService->getProduct($product);
