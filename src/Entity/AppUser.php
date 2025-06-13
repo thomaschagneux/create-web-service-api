@@ -4,10 +4,43 @@ namespace App\Entity;
 
 use App\Repository\AppUserRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Hateoas\Configuration\Annotation as Hateoas;
 use JMS\Serializer\Annotation\Groups;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
+#[Hateoas\Relation(
+    'self',
+    href: new Hateoas\Route(
+        'show_user',
+        parameters: [
+            'id' => 'expr(object.getId())',
+            'customer_id' => 'expr(object.getCustomer().getId())',
+        ]
+    ),
+    exclusion: new Hateoas\Exclusion(groups: ['getUserList', 'getUser'])
+)]
+#[Hateoas\Relation(
+    'list',
+    href: new Hateoas\Route(
+        'list_user_by_customer',
+        parameters: [
+            'id' => 'expr(object.getCustomer().getId())',
+        ]
+    ),
+    exclusion: new Hateoas\Exclusion(groups: ['getUserList', 'getUser'])
+)]
+#[Hateoas\Relation(
+    'delete',
+    href: new Hateoas\Route(
+        'delete_user',
+        parameters: [
+            'id' => 'expr(object.getId())',
+            'customer_id' => 'expr(object.getCustomer().getId())',
+        ]
+    ),
+    exclusion: new Hateoas\Exclusion(groups: ['getUserList', 'getUser'])
+)]
 #[ORM\Entity(repositoryClass: AppUserRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
 class AppUser implements UserInterface, PasswordAuthenticatedUserInterface
