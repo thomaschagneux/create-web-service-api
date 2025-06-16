@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Dto\PaginationQuery;
 use App\Entity\Product;
 use App\Service\ProductService;
 use Nelmio\ApiDocBundle\Attribute\Model;
@@ -12,6 +13,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
@@ -19,6 +21,7 @@ final class ListProductController extends AbstractController
 {
     public function __construct(
         private readonly TagAwareCacheInterface $cache,
+        private readonly ValidatorInterface $validator,
     ) {
     }
 
@@ -54,20 +57,31 @@ final class ListProductController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function listProduct(Request $request, ProductService $productService): JsonResponse
     {
-        $page = $request->query->get('page', '1');
-        $limit = $request->query->get('limit', '10');
+        $pageQuery = $request->query->get('page', '1');
+        $limitQuery = $request->query->get('limit', '100');
 
-        if (!ctype_digit($page) || !ctype_digit($limit)) {
-            return new JsonResponse(['message' => 'Page or limit is not numeric'], 400);
+        $paginationQuery = new PaginationQuery(
+            (string) $pageQuery,
+            (string) $limitQuery,
+        );
+
+        $errors = $this->validator->validate($paginationQuery);
+        if (count($errors) > 0) {
+            $errorMessages = [];
+            foreach ($errors as $error) {
+                $errorMessages[$error->getPropertyPath()] = $error->getMessage();
+            }
+
+            return new JsonResponse(['errors' => $errorMessages], 400);
         }
 
-        $idCache = 'product_list_page_'.$page.'_limit_'.$limit;
+        $idCache = 'product_list_page_'.$paginationQuery->getPage().'_limit_'.$paginationQuery->getLimit();
         $isCached = 'true';
-        $jsonProductList = $this->cache->get($idCache, function (ItemInterface $item) use ($productService, $page, $limit, &$isCached) {
+        $jsonProductList = $this->cache->get($idCache, function (ItemInterface $item) use ($productService, $paginationQuery, &$isCached) {
             $isCached = 'false';
             $item->expiresAfter(60 * 5);
 
-            return $productService->getProducts((int) $page, (int) $limit);
+            return $productService->getProducts($paginationQuery->getPageAsInt(), $paginationQuery->getLimitAsInt());
         });
 
         return new JsonResponse($jsonProductList, 200, ['x-is-cached' => $isCached], true);

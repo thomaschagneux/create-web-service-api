@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Dto\PaginationQuery;
 use App\Entity\Customer;
 use App\Service\UserService;
 use OpenApi\Attributes as OA;
@@ -11,6 +12,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
@@ -18,6 +20,7 @@ final class ListUserController extends AbstractController
 {
     public function __construct(
         private readonly TagAwareCacheInterface $cache,
+        private readonly ValidatorInterface $validator,
     ) {
     }
 
@@ -53,21 +56,31 @@ final class ListUserController extends AbstractController
     #[IsGranted('ROLE_ADMIN')]
     public function listUsers(Customer $customer, Request $request, UserService $userService): JsonResponse
     {
-        $page = $request->query->get('page', '1');
-        $limit = $request->query->get('limit', '20');
+        $pageQuery = $request->query->get('page', '1');
+        $limitQuery = $request->query->get('limit', '100');
+        $paginationQuery = new PaginationQuery(
+            (string) $pageQuery,
+            (string) $limitQuery,
+        );
 
-        if (!ctype_digit($page) || !ctype_digit($limit)) {
-            return new JsonResponse(['message' => 'Page or limit is not numeric'], 400);
+        $errors = $this->validator->validate($paginationQuery);
+        if (count($errors) > 0) {
+            $errorMessages = [];
+            foreach ($errors as $error) {
+                $errorMessages[$error->getPropertyPath()] = $error->getMessage();
+            }
+
+            return new JsonResponse(['errors' => $errorMessages], 400);
         }
 
-        $idCache = 'list_users_customer_'.$customer->getId().'_page_'.$page.'_limit_'.$limit;
+        $idCache = 'list_users_customer_'.$customer->getId().'_page_'.$paginationQuery->getPage().'_limit_'.$paginationQuery->getLimit();
         $isCached = 'true';
 
-        $jsonUserList = $this->cache->get($idCache, function (ItemInterface $item) use ($customer, $limit, $page, $userService, $isCached) {
+        $jsonUserList = $this->cache->get($idCache, function (ItemInterface $item) use ($customer, $paginationQuery, $userService, $isCached) {
             $isCached = 'false';
             $item = $item->expiresAfter(60 * 5);
 
-            return $userService->getUsers((int) $page, (int) $limit, $customer);
+            return $userService->getUsers($paginationQuery->getPageAsInt(), $paginationQuery->getLimitAsInt(), $customer);
         });
 
         return new JsonResponse($jsonUserList, 200, ['x-is-cached' => $isCached], true);
