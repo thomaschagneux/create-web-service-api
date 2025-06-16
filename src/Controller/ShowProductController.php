@@ -13,6 +13,9 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 final class ShowProductController extends AbstractController
 {
+    /**
+     * Cette méthode permet de récupérer un produit.
+     */
     #[Route('/api/product/{id}', name: 'show_product', methods: ['GET'])]
     #[OA\Response(
         response: 200,

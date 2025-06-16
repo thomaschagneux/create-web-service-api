@@ -18,6 +18,9 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 final class CreatedUserController extends AbstractController
 {
+    /**
+     * Cette méthode permet de créer un utilisateur lié à un client.
+     */
     #[Route('/api/customer/{id}/user', name: 'created_customer_user', methods: ['POST'])]
     #[OA\Response(
         response: 201,

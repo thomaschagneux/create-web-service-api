@@ -20,6 +20,9 @@ final class DeleteUserController extends AbstractController
     {
     }
 
+    /**
+     * Cette méthode permet de supprimer un utilisateur lié à un client.
+     */
     #[Route('/api/customer/{customer_id}/user/{id}', name: 'delete_user', methods: ['DELETE'])]
     #[OA\Response(
         response: 204,

@@ -16,6 +16,9 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 final class ShowUserController extends AbstractController
 {
+    /**
+     * Cette méthode permet de récupérer un utilisateur lié à un client.
+     */
     #[Route('/api/customer/{customer_id}/user/{id}', name: 'show_user', methods: ['GET'])]
     #[OA\Response(
         response: 200,
