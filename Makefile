@@ -19,6 +19,7 @@ reset-db:
 	php bin/console doctrine:fixtures:load --no-interaction
 
 clean:
+	clear
 	php bin/console cache:clear
 	php bin/console cache:warm
 	./vendor/bin/php-cs-fixer fix

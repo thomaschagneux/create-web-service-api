@@ -2,8 +2,8 @@
 
 namespace App\DataFixtures;
 
-use App\Entity\AppUser;
-use App\Entity\Customer;
+use App\Entity\ApiUser;
+use App\Entity\Buyer;
 use App\Entity\Product;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
@@ -22,49 +22,49 @@ class AppFixtures extends Fixture
 
     public function load(ObjectManager $manager): void
     {
-        $customers = $this->loadCustomers($manager);
-        $this->loadUsers($manager, $customers);
+        $apiUsers = $this->loadApiUsers($manager);
+        $this->loadBuyers($manager, $apiUsers);
         $this->loadProducts($manager);
 
         $manager->flush();
     }
 
     /**
-     * @return Customer[]
+     * @return array<ApiUser>
      */
-    private function loadCustomers(ObjectManager $manager): array
+    private function loadApiUsers(ObjectManager $manager): array
     {
-        $faker = Factory::create();
-        $customers = [];
+        $apiUsers = [];
         for ($i = 0; $i < 5; ++$i) {
-            $customer = new Customer();
-            $customer->setName($faker->name);
-            $customer->setApiKey($faker->uuid);
-            $customers[] = $customer;
-            $manager->persist($customer);
+            $apiUser = new ApiUser();
+            $roles = [self::ROLE_USER, self::ROLE_ADMIN];
+            $role = $i % 2;
+            $apiUser->setRoles([$roles[$role]]);
+            $apiUser->setEmail(0 === $role ? 'user'.($i + 1).'@mail.com' : 'admin'.($i + 1).'@mail.com');
+            $apiUser->setPassword($this->userPasswordHasher->hashPassword($apiUser, 'pass123'));
+            $apiUsers[] = $apiUser;
+            $manager->persist($apiUser);
         }
 
-        return $customers;
+        return $apiUsers;
     }
 
     /**
-     * @param Customer[] $customers
+     * @param array<ApiUser> $apiUsers
      */
-    private function loadUsers(ObjectManager $manager, array $customers): void
+    private function loadBuyers(ObjectManager $manager, array $apiUsers): void
     {
         $faker = Factory::create();
+
         for ($i = 0; $i < 20; ++$i) {
-            $customerIndex = $i % count($customers);
-            $user = new AppUser();
-            $roles = [self::ROLE_USER, self::ROLE_ADMIN];
-            $role = $i % 2;
-            $user->setRoles([$roles[$role]]);
-            $user->setEmail(0 === $role ? 'user'.($i + 1).'@mail.com' : 'admin'.($i + 1).'@mail.com');
-            $user->setPassword($this->userPasswordHasher->hashPassword($user, 'pass123'));
-            $user->setFirstName($faker->firstName);
-            $user->setLastName($faker->lastName);
-            $user->setCustomer($customers[$customerIndex]);
-            $manager->persist($user);
+            $apiUsersIndex = $i % count($apiUsers);
+            $buyer = new Buyer();
+            $buyer
+                ->setFirstName($faker->firstName)
+                ->setLastName($faker->lastName)
+                ->setApiUser($apiUsers[$apiUsersIndex]);
+
+            $manager->persist($buyer);
         }
     }
 

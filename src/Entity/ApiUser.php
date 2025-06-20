@@ -2,7 +2,9 @@
 
 namespace App\Entity;
 
-use App\Repository\AppUserRepository;
+use App\Repository\ApiUserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Hateoas\Configuration\Annotation as Hateoas;
 use JMS\Serializer\Annotation\Groups;
@@ -12,53 +14,51 @@ use Symfony\Component\Security\Core\User\UserInterface;
 #[Hateoas\Relation(
     'self',
     href: new Hateoas\Route(
-        'show_user',
+        'show_buyer',
         parameters: [
             'id' => 'expr(object.getId())',
-            'customer_id' => 'expr(object.getCustomer().getId())',
         ]
     ),
-    exclusion: new Hateoas\Exclusion(groups: ['getUserList', 'getUser'])
+    exclusion: new Hateoas\Exclusion(groups: ['getBuyerList', 'getBuyer'])
 )]
 #[Hateoas\Relation(
     'list',
     href: new Hateoas\Route(
-        'list_user_by_customer',
+        'get_buyers',
         parameters: [
-            'id' => 'expr(object.getCustomer().getId())',
         ]
     ),
-    exclusion: new Hateoas\Exclusion(groups: ['getUserList', 'getUser'])
+    exclusion: new Hateoas\Exclusion(groups: ['getBuyerList', 'getBuyer'])
 )]
 #[Hateoas\Relation(
     'delete',
     href: new Hateoas\Route(
-        'delete_user',
+        'delete_buyer',
         parameters: [
             'id' => 'expr(object.getId())',
-            'customer_id' => 'expr(object.getCustomer().getId())',
         ]
     ),
-    exclusion: new Hateoas\Exclusion(groups: ['getUserList', 'getUser'])
+    exclusion: new Hateoas\Exclusion(groups: ['getBuyerList', 'getBuyer'])
 )]
-#[ORM\Entity(repositoryClass: AppUserRepository::class)]
+#[ORM\Entity(repositoryClass: ApiUserRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
-class AppUser implements UserInterface, PasswordAuthenticatedUserInterface
+class ApiUser implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['getBuyerList', 'getBuyer'])]
     private ?int $id = null; // @phpstan-ignore-line
 
     #[ORM\Column(length: 180)]
-    #[Groups(['getUserList', 'getUser'])]
+    #[Groups(['getBuyerList', 'getBuyer'])]
     private string $email;
 
     /**
      * @var list<string> The user roles
      */
     #[ORM\Column]
-    #[Groups(['getUserList', 'getUser'])]
+    #[Groups(['getBuyerList', 'getBuyer'])]
     private array $roles = [];
 
     /**
@@ -67,17 +67,16 @@ class AppUser implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private string $password;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['getUserList', 'getUser'])]
-    private ?string $firstName = null;
+    /**
+     * @var Collection<int, Buyer>
+     */
+    #[ORM\OneToMany(targetEntity: Buyer::class, mappedBy: 'apiUser', orphanRemoval: true)]
+    private Collection $buyers;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['getUserList', 'getUser'])]
-    private ?string $lastName = null;
-
-    #[ORM\ManyToOne(inversedBy: 'users')]
-    #[Groups(['getUserList', 'getUser'])]
-    private Customer $customer;
+    public function __construct()
+    {
+        $this->buyers = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -160,38 +159,27 @@ class AppUser implements UserInterface, PasswordAuthenticatedUserInterface
         // $this->plainPassword = null;
     }
 
-    public function getFirstName(): ?string
+    /**
+     * @return Collection<int, Buyer>
+     */
+    public function getBuyers(): Collection
     {
-        return $this->firstName;
+        return $this->buyers;
     }
 
-    public function setFirstName(?string $firstName): self
+    public function addBuyer(Buyer $buyer): static
     {
-        $this->firstName = $firstName;
+        if (!$this->buyers->contains($buyer)) {
+            $this->buyers->add($buyer);
+            $buyer->setApiUser($this);
+        }
 
         return $this;
     }
 
-    public function getLastName(): ?string
+    public function removeBuyer(Buyer $buyer): static
     {
-        return $this->lastName;
-    }
-
-    public function setLastName(?string $lastName): self
-    {
-        $this->lastName = $lastName;
-
-        return $this;
-    }
-
-    public function getCustomer(): Customer
-    {
-        return $this->customer;
-    }
-
-    public function setCustomer(Customer $customer): self
-    {
-        $this->customer = $customer;
+        $this->buyers->removeElement($buyer);
 
         return $this;
     }

@@ -19,7 +19,7 @@ class ProductService
     /**
      * @throws InvalidArgumentException
      */
-    public function getProducts(int $page, int $limit): string
+    public function getSerializedProducts(int $page, int $limit): string
     {
         $productList = $this->productRepository->findPaginatedList($page, $limit);
 
@@ -28,7 +28,7 @@ class ProductService
         return $this->serializer->serialize($productList, 'json', $context);
     }
 
-    public function getProduct(Product $product): string
+    public function getSerializedProduct(Product $product): string
     {
         $context = SerializationContext::create()->setGroups(['getProduct']);
 

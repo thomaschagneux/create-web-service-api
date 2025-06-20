@@ -2,8 +2,7 @@
 
 namespace App\Repository;
 
-use App\Entity\AppUser;
-use App\Entity\Customer;
+use App\Entity\ApiUser;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
@@ -11,13 +10,13 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
 
 /**
- * @extends ServiceEntityRepository<AppUser>
+ * @extends ServiceEntityRepository<ApiUser>
  */
-class AppUserRepository extends ServiceEntityRepository implements PasswordUpgraderInterface
+class ApiUserRepository extends ServiceEntityRepository implements PasswordUpgraderInterface
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, AppUser::class);
+        parent::__construct($registry, ApiUser::class);
     }
 
     /**
@@ -25,30 +24,12 @@ class AppUserRepository extends ServiceEntityRepository implements PasswordUpgra
      */
     public function upgradePassword(PasswordAuthenticatedUserInterface $user, string $newHashedPassword): void
     {
-        if (!$user instanceof AppUser) {
+        if (!$user instanceof ApiUser) {
             throw new UnsupportedUserException(sprintf('Instances of "%s" are not supported.', $user::class));
         }
 
         $user->setPassword($newHashedPassword);
         $this->getEntityManager()->persist($user);
         $this->getEntityManager()->flush();
-    }
-
-    /**
-     * @return AppUser[]
-     */
-    public function findPaginatedList(int $page, int $limit, Customer $customer): array
-    {
-        /** @var AppUser[] $result */
-        $result = $this
-            ->createQueryBuilder('u')
-            ->andWhere('u.customer = :customer')
-            ->setParameter('customer', $customer)
-            ->setMaxResults($limit)
-            ->setFirstResult(($page - 1) * $limit)
-            ->getQuery()
-            ->getResult();
-
-        return $result;
     }
 }
