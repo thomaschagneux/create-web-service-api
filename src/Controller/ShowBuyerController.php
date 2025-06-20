@@ -2,9 +2,9 @@
 
 namespace App\Controller;
 
-use App\Entity\AppUser;
-use App\Entity\Customer;
-use App\Service\UserService;
+use App\Entity\ApiUser;
+use App\Entity\Buyer;
+use App\Service\BuyerService;
 use Nelmio\ApiDocBundle\Attribute\Model;
 use OpenApi\Attributes as OA;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
@@ -14,17 +14,17 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-final class ShowUserController extends AbstractController
+final class ShowBuyerController extends AbstractController
 {
     /**
      * Cette méthode permet de récupérer un utilisateur lié à un client.
      */
-    #[Route('/api/customer/{customer_id}/user/{id}', name: 'show_user', methods: ['GET'])]
+    #[Route('/api/buyer/{id}', name: 'show_buyer', methods: ['GET'])]
     #[OA\Response(
         response: 200,
-        description: 'Return a user',
+        description: 'Return a buyer',
         content: new OA\JsonContent(
-            ref: new Model(type: AppUser::class, groups: ['getUser'])
+            ref: new Model(type: ApiUser::class, groups: ['getBuyer'])
         )
     )]
     #[OA\Parameter(
@@ -41,13 +41,15 @@ final class ShowUserController extends AbstractController
     )]
     #[OA\Tag('Users')]
     #[IsGranted('ROLE_ADMIN')]
-    public function showUser(
-        #[MapEntity(id: 'customer_id')] Customer $customer,
-        #[MapEntity(id: 'id')] AppUser $user,
-        UserService $userService,
+    public function showBuyer(
+        #[MapEntity(id: 'id')] Buyer $buyer,
+        BuyerService $userService,
     ): JsonResponse {
-        $user = $userService->getUser($customer, $user);
+        /** @var ApiUser $actualUser */
+        $actualUser = $this->getUser();
 
-        return new JsonResponse($user, Response::HTTP_OK, [], true);
+        $buyerSerialized = $userService->getSerializedBuyer($buyer, $actualUser);
+
+        return new JsonResponse($buyerSerialized, Response::HTTP_OK, [], true);
     }
 }

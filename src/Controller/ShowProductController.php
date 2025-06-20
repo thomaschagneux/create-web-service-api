@@ -34,7 +34,7 @@ final class ShowProductController extends AbstractController
     #[IsGranted('ROLE_ADMIN')]
     public function showProduct(Product $product, ProductService $productService): JsonResponse
     {
-        $jsonProduct = $productService->getProduct($product);
+        $jsonProduct = $productService->getSerializedProduct($product);
 
         return new JsonResponse($jsonProduct, 200, [], true);
     }

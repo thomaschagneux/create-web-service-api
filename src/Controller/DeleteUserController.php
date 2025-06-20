@@ -2,8 +2,8 @@
 
 namespace App\Controller;
 
-use App\Entity\AppUser;
-use App\Entity\Customer;
+use App\Entity\ApiUser;
+use App\Entity\Buyer;
 use Doctrine\ORM\EntityManagerInterface;
 use OpenApi\Attributes as OA;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
@@ -21,41 +21,41 @@ final class DeleteUserController extends AbstractController
     }
 
     /**
-     * Cette méthode permet de supprimer un utilisateur lié à un client.
+     * Cette méthode permet de supprimer un acheteur lié à l'utilisateur actuel.
      */
-    #[Route('/api/customer/{customer_id}/user/{id}', name: 'delete_user', methods: ['DELETE'])]
+    #[Route('/api/buyer/{id}', name: 'delete_buyer', methods: ['DELETE'])]
     #[OA\Response(
         response: 204,
-        description: 'User deleted successfully'
+        description: 'Buyer deleted successfully'
     )]
     #[OA\Response(
         response: 400,
-        description: 'Bad request - User and customer are not linked'
-    )]
-    #[OA\Parameter(
-        name: 'customer_id',
-        description: 'The customer ID',
-        in: 'path',
-        schema: new OA\Schema(type: 'integer')
+        description: 'Bad request - You cannot delete this buyer'
     )]
     #[OA\Parameter(
         name: 'id',
-        description: 'The user ID',
+        description: 'The buyer ID',
         in: 'path',
         schema: new OA\Schema(type: 'integer')
     )]
-    #[OA\Tag('Users')]
+    #[OA\Tag('Buyers')]
     #[IsGranted('ROLE_ADMIN')]
     public function deleteUser(
-        #[MapEntity(id: 'customer_id')] Customer $customer,
-        #[MapEntity(id: 'id')] AppUser $appUser,
+        #[MapEntity(id: 'id')] Buyer $buyer,
     ): JsonResponse {
-        if ($customer->getId() !== $appUser->getCustomer()->getId()) {
-            throw new HttpException(Response::HTTP_BAD_REQUEST, "l'utilisateur et le client ne sont pas liés");
+        /** @var ApiUser $actualUser */
+        $actualUser = $this->getUser();
+        $buyers = $actualUser->getBuyers();
+
+        $buyerName = $buyer->getFirstName().' '.$buyer->getLastName();
+
+        if (!$buyers->contains($buyer)) {
+            throw new HttpException(Response::HTTP_BAD_REQUEST, 'This buyer is not linked to you');
         }
-        $this->entityManager->remove($appUser);
+
+        $this->entityManager->remove($buyer);
         $this->entityManager->flush();
 
-        return new JsonResponse([], Response::HTTP_NO_CONTENT);
+        return new JsonResponse([], Response::HTTP_NO_CONTENT, ['x-deleted-buyer' => $buyerName]);
     }
 }

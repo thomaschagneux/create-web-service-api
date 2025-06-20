@@ -3,8 +3,8 @@
 namespace App\Controller;
 
 use App\Dto\PaginationQuery;
-use App\Entity\Customer;
-use App\Service\UserService;
+use App\Entity\ApiUser;
+use App\Service\BuyerService;
 use OpenApi\Attributes as OA;
 use Psr\Cache\InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -16,7 +16,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
-final class ListUserController extends AbstractController
+final class GetBuyersController extends AbstractController
 {
     public function __construct(
         private readonly TagAwareCacheInterface $cache,
@@ -25,20 +25,14 @@ final class ListUserController extends AbstractController
     }
 
     /**
-     * Cette méthode permet de récupérer l'ensemble des utilisateurs liés à un client.
+     * Cette méthode permet de récupérer l'ensemble des acheteurs liés à l'utilisateur actuel.
      *
      * @throws InvalidArgumentException
      */
-    #[Route('/api/customer/{id}/user-list', name: 'list_user_by_customer', methods: ['GET'])]
+    #[Route('/api/buyers', name: 'get_buyers', methods: ['GET'])]
     #[OA\Response(
         response: 200,
-        description: 'Return list of users ',
-    )]
-    #[OA\Parameter(
-        name: 'id',
-        description: "L'identifiant du client",
-        in: 'path',
-        schema: new OA\Schema(type: 'integer')
+        description: 'Return list of buyers ',
     )]
     #[OA\Parameter(
         name: 'page',
@@ -52,12 +46,15 @@ final class ListUserController extends AbstractController
         in: 'query',
         schema: new OA\Schema(type: 'int')
     )]
-    #[OA\Tag('Users')]
+    #[OA\Tag('Buyers')]
     #[IsGranted('ROLE_ADMIN')]
-    public function listUsers(Customer $customer, Request $request, UserService $userService): JsonResponse
+    public function listUsers(Request $request, BuyerService $buyerService): JsonResponse
     {
         $pageQuery = $request->query->get('page', '1');
         $limitQuery = $request->query->get('limit', '100');
+        /** @var ApiUser $apiUser */
+        $apiUser = $this->getUser();
+
         $paginationQuery = new PaginationQuery(
             (string) $pageQuery,
             (string) $limitQuery,
@@ -73,14 +70,14 @@ final class ListUserController extends AbstractController
             return new JsonResponse(['errors' => $errorMessages], 400);
         }
 
-        $idCache = 'list_users_customer_'.$customer->getId().'_page_'.$paginationQuery->getPage().'_limit_'.$paginationQuery->getLimit();
+        $idCache = 'list_users_page_'.$paginationQuery->getPage().'_limit_'.$paginationQuery->getLimit();
         $isCached = 'true';
 
-        $jsonUserList = $this->cache->get($idCache, function (ItemInterface $item) use ($customer, $paginationQuery, $userService, $isCached) {
+        $jsonUserList = $this->cache->get($idCache, function (ItemInterface $item) use ($paginationQuery, $buyerService, &$isCached, $apiUser) {
             $isCached = 'false';
-            $item = $item->expiresAfter(60 * 5);
+            $item->expiresAfter(60 * 5);
 
-            return $userService->getUsers($paginationQuery->getPageAsInt(), $paginationQuery->getLimitAsInt(), $customer);
+            return $buyerService->getSerializedBuyers($paginationQuery->getPageAsInt(), $paginationQuery->getLimitAsInt(), $apiUser);
         });
 
         return new JsonResponse($jsonUserList, 200, ['x-is-cached' => $isCached], true);

@@ -81,7 +81,7 @@ final class ListProductController extends AbstractController
             $isCached = 'false';
             $item->expiresAfter(60 * 5);
 
-            return $productService->getProducts($paginationQuery->getPageAsInt(), $paginationQuery->getLimitAsInt());
+            return $productService->getSerializedProducts($paginationQuery->getPageAsInt(), $paginationQuery->getLimitAsInt());
         });
 
         return new JsonResponse($jsonProductList, 200, ['x-is-cached' => $isCached], true);
