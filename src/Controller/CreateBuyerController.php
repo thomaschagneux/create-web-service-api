@@ -17,10 +17,6 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 final class CreateBuyerController extends AbstractController
 {
-    public function __construct(
-    ) {
-    }
-
     /**
      * Cette méthode permet de créer un acheteur lié à l'utilisateur actuel..
      */
@@ -53,9 +49,7 @@ final class CreateBuyerController extends AbstractController
 
             $data = $buyerService->getSerializedBuyer($createdBuyer, $apiUser);
 
-            $response = new JsonResponse($data, Response::HTTP_CREATED, [], true);
-
-            return $response;
+            return new JsonResponse($data, Response::HTTP_CREATED, [], true);
         }
 
         throw new HttpException(404, 'User not found');

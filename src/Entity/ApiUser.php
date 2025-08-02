@@ -30,16 +30,6 @@ use Symfony\Component\Security\Core\User\UserInterface;
     ),
     exclusion: new Hateoas\Exclusion(groups: ['getBuyerList', 'getBuyer'])
 )]
-#[Hateoas\Relation(
-    'delete',
-    href: new Hateoas\Route(
-        'delete_buyer',
-        parameters: [
-            'id' => 'expr(object.getId())',
-        ]
-    ),
-    exclusion: new Hateoas\Exclusion(groups: ['getBuyerList', 'getBuyer'])
-)]
 #[ORM\Entity(repositoryClass: ApiUserRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
 class ApiUser implements UserInterface, PasswordAuthenticatedUserInterface

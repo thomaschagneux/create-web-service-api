@@ -14,7 +14,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-final class DeleteUserController extends AbstractController
+final class DeleteBuyerController extends AbstractController
 {
     public function __construct(private readonly EntityManagerInterface $entityManager)
     {
