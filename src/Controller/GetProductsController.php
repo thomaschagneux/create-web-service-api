@@ -17,7 +17,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
-final class ListProductController extends AbstractController
+final class GetProductsController extends AbstractController
 {
     public function __construct(
         private readonly TagAwareCacheInterface $cache,
@@ -55,7 +55,7 @@ final class ListProductController extends AbstractController
     )]
     #[OA\Tag('Products')]
     #[IsGranted('ROLE_USER')]
-    public function listProduct(Request $request, ProductService $productService): JsonResponse
+    public function getProducts(Request $request, ProductService $productService): JsonResponse
     {
         $pageQuery = $request->query->get('page', '1');
         $limitQuery = $request->query->get('limit', '100');

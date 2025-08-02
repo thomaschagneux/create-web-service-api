@@ -13,7 +13,7 @@ class Buyer
     #[ORM\GeneratedValue]
     #[ORM\Column]
     #[Groups(['getBuyerList', 'getBuyer'])]
-    private ?int $id = null; // @phpstan-ignore-line
+    private int $id;
 
     #[ORM\ManyToOne(inversedBy: 'buyers')]
     #[ORM\JoinColumn(nullable: false)]
@@ -28,7 +28,7 @@ class Buyer
     #[ORM\Column(length: 255)]
     private string $lastName;
 
-    public function getId(): ?int
+    public function getId(): int
     {
         return $this->id;
     }
